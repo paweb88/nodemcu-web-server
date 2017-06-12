@@ -33,14 +33,17 @@ function Application:setup()
 end
 
 Application.actions = {
-	domofon = function(value)
-	    Player:playOpen(config.buzzerPin)
-	    gpio.write(config.lockerPin, gpio.HIGH)
-	    tmr.alarm(2, 5000, tmr.ALARM_SINGLE, function() 
-	    	Player:playClose(config.buzzerPin)
-	    	gpio.write(config.lockerPin, gpio.LOW)
-	    end)
-	    return 200,sjson.encode({action = "domofon", status = "open"})
+	intercom = function(value)
+		if (value == 'open')
+		then
+		    Player:playOpen(config.buzzerPin)
+		    gpio.write(config.lockerPin, gpio.HIGH)
+		    tmr.alarm(2, 5000, tmr.ALARM_SINGLE, function() 
+		    	Player:playClose(config.buzzerPin)
+		    	gpio.write(config.lockerPin, gpio.LOW)
+		    end)
+		    return 200,sjson.encode({action = "intercom", status = "open"})
+		end
 	end
 }
 
@@ -50,10 +53,10 @@ function handeRequest(conn, payload)
         content = nil
     }
     local request = HttpParser.parse(payload)
-    if (request.path == config.api_key) then
-        if request.content then
-            requestJson = sjson.decode(request.content)
-            response["code"], response["content"] = Application.actions[requestJson.action](requestJson.value)
+    if (request.path[2] == config.api_key) then
+        if request.path[3] then
+            local method = (request.path[3]);
+            response["code"], response["content"] = Application.actions[method](request.path[4])
         end
     else
         response["code"] = 401

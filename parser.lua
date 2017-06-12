@@ -28,11 +28,12 @@ function HttpParser.parse(payload)
 	end
 	
 	local splitHeader = split((httpRequest[1]), "%s+")
-	
-	request.method = (splitHeader[1])
-	request.path = string.sub((splitHeader[2]), 2)
-	request.protocal = (splitHeader[3])
-	    
+	if ((splitHeader[1]) == 'POST' or (splitHeader[1]) == 'GET')
+	then
+		request.method = (splitHeader[1])
+		request.path = split(splitHeader[2], '/')
+		request.protocal = (splitHeader[3])
+	end   
 	httpRequest = nil
 	splitHeader = nil
 	splitPayload = nil
